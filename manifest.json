@@ -1,0 +1,27 @@
+{
+  "manifest_version": 2,
+  "name": "Condprofile",
+  "version": "1.0",
+
+  "applications": {
+    "gecko": {
+      "id": "condprof@mozilla.org"
+    }
+  },
+"permissions": [
+    "downloads",
+    "storage"
+  ],
+
+  "experiment_apis": {
+    "condprof": {
+      "schema": "schemas.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "api.js",
+        "paths": [["condprof"]],
+        "events": ["startup"]
+      }
+    }
+  }
+}

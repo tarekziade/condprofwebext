@@ -17,10 +17,10 @@ const OAUTH_HOST_PREF = "identity.fxaccounts.remote.oauth.uri";
 const TOKEN_HOST_PREF = "identity.sync.tokenserver.uri";
 const PROFILE_HOST_PREF = "identity.fxaccounts.remote.profile.uri";
 
-Services.prefs.setCharPref(HOST_PREF, "https://stable.dev.lcip.org/auth/v1");
-Services.prefs.setCharPref(OAUTH_HOST_PREF, "https://oauth-stable.dev.lcip.org/v1");
-Services.prefs.setCharPref(TOKEN_HOST_PREF, "http://token.dev.lcip.org/1.0/sync/1.5");
-Services.prefs.setCharPref(PROFILE_HOST_PREF, "https://stable.dev.lcip.org/profile/v1");
+Services.prefs.setCharPref(HOST_PREF, "https://api-accounts.stage.mozaws.net/v1");
+Services.prefs.setCharPref(OAUTH_HOST_PREF, "https://oauth.stage.mozaws.net/v1");
+Services.prefs.setCharPref(TOKEN_HOST_PREF, "https://token.stage.mozaws.net/1.0/sync/1.5");
+Services.prefs.setCharPref(PROFILE_HOST_PREF, "https://profile.stage.mozaws.net/v1");
 
 function printServersSetup() {
   console.log("identity.fxaccounts.auth.uri " + Services.prefs.getCharPref("identity.fxaccounts.auth.uri"));
@@ -76,6 +76,7 @@ async function condProfStartup() {
   } else {
     console.log("FxA already connected");
   }
+
   // configure sync
   await Weave.Service.configure();
 
@@ -86,6 +87,7 @@ async function condProfStartup() {
   if (Weave.Service.locked) {
     await promiseObserver("weave:service:resyncs-finished");
   }
+
   console.log("Now triggering a sync -- this will also login via the token server");
   await Weave.Service.sync();
   console.log("Sync done");
@@ -97,5 +99,4 @@ this.condprof = class extends ExtensionAPI {
     condProfStartup();
   }
   onShutdown(isAppShutdown) {}
-
 };

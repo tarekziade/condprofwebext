@@ -52,7 +52,7 @@ async function condProfStartup() {
   Weave.Svc.Prefs.set("syncThreshold", 10000000);
 
   return;
-
+/*
   // we want to do a first sync.
   Weave.Svc.Prefs.set("firstSync", true);
 
@@ -93,6 +93,7 @@ async function condProfStartup() {
   console.log("Now triggering a sync -- this will also login via the token server");
   await Weave.Service.sync();
   console.log("Sync done");
+  */
 }
 
 
@@ -100,9 +101,11 @@ this.condprof = class extends ExtensionAPI {
   onStartup() {
     condProfStartup();
   }
-  onShutdown(isAppShutdown) {}
+  onShutdown(isAppShutdown) {
+  }
 
   getAPI(context) {
+    console.log("GetAPI called");
     const {extension} = context;
     return {
         condprof: {

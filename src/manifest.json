@@ -17,7 +17,7 @@
     "condprof": {
       "schema": "schemas.json",
       "parent": {
-        "scopes": ["addon_parent"],
+        "scopes": ["addon_parent", "content_parent", "devtools_parent"],
         "script": "api.js",
         "paths": [["condprof"]],
         "events": ["startup"]

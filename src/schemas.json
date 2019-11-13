@@ -1,15 +1,2 @@
 [
-  {
-    "namespace": "condprof",
-    "description": "Condprof",
-    "functions": [
-      {
-        "name": "testAPI",
-        "type": "function",
-        "description": "Tests the API",
-        "parameters": [],
-        "async": true
-      }
-    ]
-  }
 ]

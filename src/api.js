@@ -44,75 +44,61 @@ function promiseObserver(aEventName) {
 
 async function condProfStartup() {
   printServersSetup();
-
-  // Delay autosync
   Weave.Svc.Prefs.set("scheduler.immediateInterval", 7200);
   Weave.Svc.Prefs.set("scheduler.idleInterval", 7200);
   Weave.Svc.Prefs.set("scheduler.activeInterval", 7200);
   Weave.Svc.Prefs.set("syncThreshold", 10000000);
-
-  return;
-/*
-  // we want to do a first sync.
-  Weave.Svc.Prefs.set("firstSync", true);
-
-  var env = Cc["@mozilla.org/process/environment;1"].getService(
-    Ci.nsIEnvironment
-  );
-  var username = env.get("CONDPROF_USERNAME");
-  var password = env.get("CONDPROF_PASSWORD");
-
-  console.log("User is " + username);
-  // connect to FxA if needed
-  var user = await fxAccounts.getSignedInUser();
-  if (!user) {
-    console.log("Signing in to FxA");
-    var fxAccount = {username: username, "password": password};
-    await FxAccountsConfig.ensureConfigured();
-    let client = new FxAccountsClient();
-    let credentials = await client.signIn(fxAccount.username, fxAccount.password, true);
-    await fxAccounts._internal.setSignedInUser(credentials);
-    if (!credentials.verified) {
-      throw new Error("account not verified!");
-    }
-  } else {
-    console.log("FxA already connected");
-  }
-
-  // configure sync
-  await Weave.Service.configure();
-
-  if (!Weave.Status.ready) {
-    await promiseObserver("weave:service:ready");
-  }
-
-  if (Weave.Service.locked) {
-    await promiseObserver("weave:service:resyncs-finished");
-  }
-
-  console.log("Now triggering a sync -- this will also login via the token server");
-  await Weave.Service.sync();
-  console.log("Sync done");
-  */
 }
 
 
 this.condprof = class extends ExtensionAPI {
   onStartup() {
+    let win = Services.wm.getMostRecentWindow("navigator:browser");
+    // manually expose condprof APIs
+    win.browser.condprof = this.getAPI(this);
     condProfStartup();
   }
   onShutdown(isAppShutdown) {
   }
 
   getAPI(context) {
-    console.log("GetAPI called");
     const {extension} = context;
     return {
-        condprof: {
-          async testAPI() {
-            console.log("YAY");
+          async connectToFXA(username, password) {
+            console.log("User is " + username);
+            var user = await fxAccounts.getSignedInUser();
+            if (!user) {
+              console.log("Signing in to FxA");
+              var fxAccount = {username: username, "password": password};
+              await FxAccountsConfig.ensureConfigured();
+              let client = new FxAccountsClient();
+              let credentials = await client.signIn(fxAccount.username, fxAccount.password, true);
+              await fxAccounts._internal.setSignedInUser(credentials);
+              if (!credentials.verified) {
+                throw new Error("account not verified!");
+              }
+            } else {
+              console.log("FxA already connected");
+            }
           },
-      },
+          async configureSync() {
+           await Weave.Service.configure();
+           if (!Weave.Status.ready) {
+             await promiseObserver("weave:service:ready");
+           }
+           if (Weave.Service.locked) {
+             await promiseObserver("weave:service:resyncs-finished");
+           }
+         },
+         async triggerSync() {
+           console.log("Now triggering a sync -- this will also login via the token server");
+           await Weave.Service.sync();
+           console.log("Sync done");
+         },
+         getLog() {
+           // todo, grab logs
+           return {"some logs here"};
+         }
     };
   }
 };

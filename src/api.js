@@ -51,6 +51,8 @@ async function condProfStartup() {
   Weave.Svc.Prefs.set("scheduler.activeInterval", 7200);
   Weave.Svc.Prefs.set("syncThreshold", 10000000);
 
+  return;
+
   // we want to do a first sync.
   Weave.Svc.Prefs.set("firstSync", true);
 
@@ -99,4 +101,15 @@ this.condprof = class extends ExtensionAPI {
     condProfStartup();
   }
   onShutdown(isAppShutdown) {}
+
+  getAPI(context) {
+    const {extension} = context;
+    return {
+        condprof: {
+          async testAPI() {
+            console.log("YAY");
+          },
+      },
+    };
+  }
 };

@@ -12,6 +12,7 @@ const { FxAccountsClient } = ChromeUtils.import("resource://gre/modules/FxAccoun
 const { FxAccountsConfig } = ChromeUtils.import("resource://gre/modules/FxAccountsConfig.jsm");
 const { LogManager } = ChromeUtils.import("resource://services-common/logmanager.js");
 const { OS } = ChromeUtils.import("resource://gre/modules/osfile.jsm");
+const { CommonUtils } = ChromeUtils.import("resource://services-common/utils.js");
 
 const HOST_PREF = "identity.fxaccounts.auth.uri";
 const OAUTH_HOST_PREF = "identity.fxaccounts.remote.oauth.uri";
@@ -361,6 +362,7 @@ this.condprof = class extends ExtensionAPI {
           async signIn(password) {
             return await Authentication.signIn(password);
           },
+
           async configureSync() {
            Logger.AssertTrue(await Authentication.isReady());
            await Weave.Service.configure();
@@ -374,12 +376,19 @@ this.condprof = class extends ExtensionAPI {
            // todo, enable all sync engines here
            // the addon engine requires kinto creds...
          },
+
          async triggerSync() {
            await this.configureSync();
            console.log("Now triggering a sync -- this will also login via the token server");
            await Weave.Service.sync();
            // XXX grab the sync done event and await for it here..
+           // wait a second for things to settle...
+            await new Promise(resolve => {
+              CommonUtils.namedTimer(resolve, 1000, this, "postsync");
+           });
            console.log("Sync done");
+           let lastLogs = await this.getLog();
+           return {"logs": lastLogs};
          },
 
          async getLog() {

@@ -11,6 +11,7 @@ const { fxAccounts } = ChromeUtils.import("resource://gre/modules/FxAccounts.jsm
 const { FxAccountsClient } = ChromeUtils.import("resource://gre/modules/FxAccountsClient.jsm");
 const { FxAccountsConfig } = ChromeUtils.import("resource://gre/modules/FxAccountsConfig.jsm");
 const { LogManager } = ChromeUtils.import("resource://services-common/logmanager.js");
+const { OS } = ChromeUtils.import("resource://gre/modules/osfile.jsm");
 
 const HOST_PREF = "identity.fxaccounts.auth.uri";
 const OAUTH_HOST_PREF = "identity.fxaccounts.remote.oauth.uri";
@@ -380,9 +381,32 @@ this.condprof = class extends ExtensionAPI {
            // XXX grab the sync done event and await for it here..
            console.log("Sync done");
          },
-         getLog() {
-           // todo, grab logs
-           return {"some logs": "here"};
+
+         async getLog() {
+           // grabs the last 5 log files
+           let outputDirectory = OS.Path.join(OS.Constants.Path.profileDir, ...["weave", "logs"]);
+           let iterator = new OS.File.DirectoryIterator(outputDirectory);
+           let entries = [];
+
+           // Iterate through the directory
+           await iterator.forEach(
+           async function onEntry(entry) {
+             let path = entry.path;
+             let info = await OS.File.stat(path);
+             info.name = entry.name;
+             entries.push(info);
+           }
+           );
+           entries.sort(function(a, b){
+             return b.lastModificationDate - a.lastModificationDate;
+           });
+           let res = [];
+           await entries.slice(0, 5).forEach(async function onEntry(entry) {
+             let content = await OS.File.read(entry.path, { encoding: "utf-8" } );
+             res.push({name: entry.name, content: content});
+           }
+           );
+           return {"logs": res};
          }
     };
   }

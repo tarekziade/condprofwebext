@@ -377,7 +377,10 @@ this.condprof = class extends ExtensionAPI {
            // the addon engine requires kinto creds...
          },
 
-         async triggerSync() {
+         async triggerSync(password) {
+           if (!await Authentication.isReady()) {
+             await this.signIn(password);
+           }
            await this.configureSync();
            console.log("Now triggering a sync -- this will also login via the token server");
            await Weave.Service.sync();
